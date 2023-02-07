@@ -5,10 +5,15 @@ CREATE TABLE users(
     email TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
     role TEXT NOT NULL,
-    created_at TEXT NOT NULL
+    created_at TEXT DEFAULT (DATETIME()) NOT NULL
 );
 
+DROP TABLE users;
 
+INSERT INTO users(id, name, email, password, role)
+    VALUES("u001", "Fulano", "fulano@email.com", "f951357@Q", "administrador");
+
+SELECT * FROM users;
 
 CREATE TABLE posts(
     id TEXT PRIMARY KEY UNIQUE NOT NULL,
@@ -16,10 +21,12 @@ CREATE TABLE posts(
     content TEXT NOT NULL,
     likes INTEGER NOT NULL,
     dislikes INTEGER NOT NULL,
-    created_at TEXT NOT NULL,
+    created_at TEXT DEFAULT (DATETIME()) NOT NULL,
     updated_at TEXT NOT NULL,
     FOREIGN KEY (creator_id) REFERENCES users(id)
 );
+
+DROP TABLE posts;
 
 CREATE TABLE likes_dislikes(
     user_id TEXT NOT NULL,
