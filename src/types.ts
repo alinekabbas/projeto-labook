@@ -12,6 +12,11 @@ export interface UserDB {
     created_at: string
 }
 
+export interface UserLoginDB {
+    email: string,
+    password: string
+}
+
 export interface PostsDB {
     id: string,
     creator_id: string,
