@@ -1,20 +1,33 @@
 import { UserDatabase } from "../database/UserDatabase"
+import { UserDTO } from "../dtos/UserDTO"
 import { BadRequestError } from "../errors/BadRequestError"
 import { NotFoundError } from "../errors/NotFoundError"
 import { User } from "../models/User"
-import { ROLE, UserDB } from "../types"
+import { UserDB, UserLoginDB } from "../types"
 
 export class UserBusiness {
+    constructor(
+        private userDTO: UserDTO,
+        private userDatabase: UserDatabase
+    ){}
+
+    public getAllUsers = async()=>{
+        const usersDB = this.userDatabase.getAllUsers()
+
+        const users: User[] = (await usersDB).map((userDB)=> new User(
+            userDB.id,
+            userDB.name,
+            userDB.email,
+            userDB.password,
+            userDB.role,
+            userDB.created_at
+        ))
+
+        return({users})
+    }
+
     public signupUsers = async (input: any) =>{
         const {id, name, email, password, role} = input
-
-        if( typeof id !== "string"){
-            throw new BadRequestError("'id' deve ser string")            
-        }
-
-        if( typeof name !== "string"){
-            throw new BadRequestError("'name' deve ser string")            
-        }
 
         if (!email.match(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/)) {
             throw new BadRequestError("O email deve ter o formato 'exemplo@exemplo.com'.")
@@ -24,15 +37,7 @@ export class UserBusiness {
 			throw new BadRequestError("'password' deve possuir entre 8 e 12 caracteres, com letras maiúsculas e minúsculas e no mínimo um número e um caractere especial")
 		}
 
-        if(
-            role !== ROLE.ADMIN &&
-            role !== ROLE.USER
-        ){
-            throw new BadRequestError("'role' deve ser administrador ou usuário")
-        }
-
-        const userDatabase = new UserDatabase()
-        const userDBExists = await userDatabase.findUser(id, email)
+        const userDBExists = await this.userDatabase.findUser(id, email)
 
         if(userDBExists) {
             throw new BadRequestError("'id' ou 'email já cadastrados")            
@@ -56,12 +61,9 @@ export class UserBusiness {
             created_at: newUser.getCreatedAt()
         }
 
-        await userDatabase.insertUser(newUserDB)
+        await this.userDatabase.insertUser(newUserDB)
 
-        const output = {
-            message: "Usuário inscrito com sucesso",
-            newUser: newUser
-        }
+        const output = this.userDTO.signupUsersOutput(newUser)
 
         return output
     }
@@ -77,17 +79,13 @@ export class UserBusiness {
 			throw new BadRequestError("'password' deve possuir entre 8 e 12 caracteres, com letras maiúsculas e minúsculas e no mínimo um número e um caractere especial")
 		}
 
-        const userDatabase = new UserDatabase()
-        const userDBExists = await userDatabase.findUserLogin(email, password)
+        const userDBExists = await this.userDatabase.findUserLogin(email, password)
 
         if(!userDBExists) {
             throw new NotFoundError("Usuário e/ou senha incorretos")            
         }
 
-        const output = {
-            message: "Login efetuado com sucesso",
-            user: userDBExists
-        }
+        const output = this.userDTO.loginUserOutput(email, password)
 
         return output
     }
