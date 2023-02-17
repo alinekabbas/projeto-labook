@@ -9,12 +9,10 @@ export class UserDatabase extends BaseDatabase {
         return result
     }
 
-    public async findUser(id: string, email: string){
+    public async findUser(email: string){
         const [userDB]: UserDB[] | undefined [] = await BaseDatabase
             .connection(UserDatabase.TABLE_USERS)
-            .where({id})
-            .orWhere({email})
-        
+            .where({email})        
         return userDB
     }
 
@@ -24,13 +22,5 @@ export class UserDatabase extends BaseDatabase {
             .insert(newUserDB)
     }
 
-    public async findUserLogin(email: string, password: string){
-        const [userDB]: UserDB[] | undefined [] = await BaseDatabase
-            .connection(UserDatabase.TABLE_USERS)
-            .where({email})
-            .andWhere({password})
-        
-        return userDB
-    }
 
 }

@@ -1,14 +1,20 @@
 import { UserDatabase } from "../database/UserDatabase"
-import { UserDTO } from "../dtos/UserDTO"
+import { LoginUserInputDTO, LoginUserOutputDTO, SignupUsersInputDTO, SignupUsersOutputDTO, UserDTO } from "../dtos/UserDTO"
 import { BadRequestError } from "../errors/BadRequestError"
 import { NotFoundError } from "../errors/NotFoundError"
 import { User } from "../models/User"
-import { UserDB, UserLoginDB } from "../types"
+import { HashManager } from "../services/HashManager"
+import { IdGenerator } from "../services/IdGenerator"
+import { TokenManager } from "../services/TokenManager"
+import { USER_ROLE, TokenPayload, UserDB } from "../types"
 
 export class UserBusiness {
     constructor(
         private userDTO: UserDTO,
-        private userDatabase: UserDatabase
+        private userDatabase: UserDatabase,
+        private idGenerator: IdGenerator,
+        private tokenManager: TokenManager,
+        private hashManager: HashManager
     ){}
 
     public getAllUsers = async()=>{
@@ -26,8 +32,8 @@ export class UserBusiness {
         return({users})
     }
 
-    public signupUsers = async (input: any) =>{
-        const {id, name, email, password, role} = input
+    public signupUsers = async (input: SignupUsersInputDTO): Promise<SignupUsersOutputDTO> =>{
+        const {name, email, password} = input
 
         if (!email.match(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/)) {
             throw new BadRequestError("O email deve ter o formato 'exemplo@exemplo.com'.")
@@ -37,17 +43,21 @@ export class UserBusiness {
 			throw new BadRequestError("'password' deve possuir entre 8 e 12 caracteres, com letras maiúsculas e minúsculas e no mínimo um número e um caractere especial")
 		}
 
-        const userDBExists = await this.userDatabase.findUser(id, email)
+        const userDBExists = await this.userDatabase.findUser(email)
 
         if(userDBExists) {
-            throw new BadRequestError("'id' ou 'email já cadastrados")            
+            throw new BadRequestError("'email' já cadastrado")            
         }
+
+        const id = this.idGenerator.generate()
+        const hashedPassword = await this.hashManager.hash(password)
+        const role = USER_ROLE.USER
 
         const newUser = new User(
             id,
             name,
             email,
-            password,
+            hashedPassword,
             role,
             new Date().toISOString()
         )
@@ -63,12 +73,20 @@ export class UserBusiness {
 
         await this.userDatabase.insertUser(newUserDB)
 
-        const output = this.userDTO.signupUsersOutput(newUser)
+        const tokenPayload: TokenPayload = {
+            id: newUser.getId(),
+            name: newUser.getName(),
+            role: newUser.getRole()
+        }
+
+        const token = this.tokenManager.createToken(tokenPayload)
+
+        const output = this.userDTO.signupUsersOutput(newUser, token)
 
         return output
     }
 
-    public loginUser = async (input: any) =>{
+    public loginUser = async (input: LoginUserInputDTO): Promise<LoginUserOutputDTO> =>{
         const {email, password} = input
 
         if (!email.match(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/)) {
@@ -79,13 +97,38 @@ export class UserBusiness {
 			throw new BadRequestError("'password' deve possuir entre 8 e 12 caracteres, com letras maiúsculas e minúsculas e no mínimo um número e um caractere especial")
 		}
 
-        const userDBExists = await this.userDatabase.findUserLogin(email, password)
+        const userDBExists = await this.userDatabase.findUser(email)
 
         if(!userDBExists) {
-            throw new NotFoundError("Usuário e/ou senha incorretos")            
+            throw new NotFoundError("'email' incorreto ou não cadastrado")            
         }
 
-        const output = this.userDTO.loginUserOutput(email, password)
+        const user = new User(
+            userDBExists.id,
+            userDBExists.name,
+            userDBExists.email,
+            userDBExists.password,
+            userDBExists.role,
+            userDBExists.created_at
+        )
+
+        const hashedPassword = user.getPassword()
+
+        const isPasswordCorrect = await this.hashManager.compare(password, hashedPassword)
+
+        if(!isPasswordCorrect){
+            throw new BadRequestError("'Senha' incorreta")
+        }
+
+        const tokenPayload: TokenPayload = {
+            id: user.getId(),
+            name: user.getName(),
+            role: user.getRole()
+        }
+
+        const token = this.tokenManager.createToken(tokenPayload)
+
+        const output = this.userDTO.loginUserOutput(token)
 
         return output
     }
