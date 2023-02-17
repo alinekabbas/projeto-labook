@@ -15,6 +15,9 @@ INSERT INTO users(id, name, email, password, role)
 
 SELECT * FROM users;
 
+DELETE FROM users
+WHERE id = "381d1175-1fcb-4734-818a-677b1c1a6cec";
+
 CREATE TABLE posts(
     id TEXT PRIMARY KEY UNIQUE NOT NULL,
     creator_id TEXT NOT NULL,
@@ -38,6 +41,9 @@ VALUES
 DROP TABLE posts;
 
 SELECT * FROM posts;
+
+DELETE FROM posts
+WHERE id = "p004";
 
 CREATE TABLE likes_dislikes(
     user_id TEXT NOT NULL,
