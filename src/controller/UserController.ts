@@ -29,11 +29,9 @@ export class UserController {
     public signupUsers = async (req: Request, res: Response) =>{
         try {
             const input = this.userDTO.signupUsersInput(
-                req.body.id,
                 req.body.name,
                 req.body.email,
-                req.body.password,
-                req.body.role
+                req.body.password
             ) 
 
             const output = await this.userbusiness.signupUsers(input)

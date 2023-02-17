@@ -1,24 +1,19 @@
 import { BadRequestError } from "../errors/BadRequestError";
 import { User } from "../models/User";
-import { ROLE } from "../types";
 
 export interface SignupUsersInputDTO {
-    id: string,
     name: string,
     email: string,
-    password: string,
-    role: ROLE
+    password: string
 }
 
 export interface SignupUsersOutputDTO {
     message: string,
     newUser: {
-        id: string,
         name: string,
-        email: string,
-        password: string,
-        role: ROLE
-    }
+        email: string
+    },
+    token: string
 }
 
 export interface LoginUserInputDTO {
@@ -28,24 +23,15 @@ export interface LoginUserInputDTO {
 
 export interface LoginUserOutputDTO {
     message: string,
-    user: {
-        email: string,
-        password: string
-    }
+    token: string
 }
 
 export class UserDTO {
     public signupUsersInput(
-        id: unknown,
         name: unknown,
         email: unknown,
-        password: unknown,
-        role: unknown
+        password: unknown
     ): SignupUsersInputDTO {
-        if (typeof id !== "string") {
-            throw new BadRequestError("'id' deve ser string")
-        }
-
         if (typeof name !== "string") {
             throw new BadRequestError("'name' deve ser string")
         }
@@ -58,34 +44,23 @@ export class UserDTO {
             throw new BadRequestError("'password' deve ser string")
         }
 
-        if(
-            role !== ROLE.ADMIN &&
-            role !== ROLE.USER
-        ){
-            throw new BadRequestError("'role' deve ser administrador ou usuário")
-        }
-
         const dto: SignupUsersInputDTO = {
-            id,
             name,
             email,
-            password,
-            role
+            password
         }
 
         return dto
     }
 
-    public signupUsersOutput(newUser: User):SignupUsersOutputDTO{
+    public signupUsersOutput(newUser: User, token: string):SignupUsersOutputDTO{
         const dto: SignupUsersOutputDTO = {
             message: "Usuário inscrito com sucesso",
             newUser: {
-                id: newUser.getId(),
                 name: newUser.getName(),
-                email: newUser.getEmail(),
-                password: newUser.getPassword(),
-                role: newUser.getRole()
-            }  
+                email: newUser.getEmail()
+            },
+            token
         }
         return dto
     }
@@ -108,13 +83,10 @@ export class UserDTO {
         return dto
     }
 
-    public loginUserOutput(email: string, password: string ): LoginUserOutputDTO{
+    public loginUserOutput(token: string): LoginUserOutputDTO{
         const dto:LoginUserOutputDTO = {
             message: "Login efetuado com sucesso",
-            user: {
-                email: email,
-                password: password
-            }
+            token
         }
         return dto
     }
