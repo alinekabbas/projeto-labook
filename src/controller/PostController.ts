@@ -7,20 +7,20 @@ export class PostController {
     constructor(
         private postDTO: PostDTO,
         private postBusinnes: PostBusiness
-    ){}
+    ) { }
 
     public getPosts = async (req: Request, res: Response) => {
         try {
             const input = {
                 token: req.headers.authorization
-            } 
+            }
             const output = await this.postBusinnes.getPosts(input)
 
             res.status(200).send(output)
-            
+
         } catch (error) {
             console.log(error)
-    
+
             if (error instanceof BaseError) {
                 res.status(error.statusCode).send(error.message)
             } else {
@@ -29,7 +29,7 @@ export class PostController {
         }
     }
 
-    public createPost = async (req: Request, res: Response) =>{
+    public createPost = async (req: Request, res: Response) => {
         try {
             const input = this.postDTO.createPostInput(
                 req.headers.authorization,
@@ -39,17 +39,17 @@ export class PostController {
             const output = await this.postBusinnes.createPost(input)
 
             res.status(201).send(output)
-            
+
         } catch (error) {
             console.log(error)
-    
+
             if (error instanceof BaseError) {
                 res.status(error.statusCode).send(error.message)
             } else {
                 res.status(500).send("Erro inesperado")
             }
         }
-        
+
     }
 
     public editPost = async (req: Request, res: Response) => {
@@ -63,10 +63,10 @@ export class PostController {
             const output = await this.postBusinnes.editPost(input)
 
             res.status(201).send(output)
-            
+
         } catch (error) {
             console.log(error)
-    
+
             if (error instanceof BaseError) {
                 res.status(error.statusCode).send(error.message)
             } else {
@@ -85,10 +85,10 @@ export class PostController {
             const output = await this.postBusinnes.deletePost(input)
 
             res.status(200).send(output)
-            
+
         } catch (error) {
             console.log(error)
-    
+
             if (error instanceof BaseError) {
                 res.status(error.statusCode).send(error.message)
             } else {
@@ -108,15 +108,15 @@ export class PostController {
             const output = await this.postBusinnes.likeDislikePost(input)
 
             res.status(200).send(output)
-            
+
         } catch (error) {
             console.log(error)
-    
+
             if (error instanceof BaseError) {
                 res.status(error.statusCode).send(error.message)
             } else {
                 res.status(500).send("Erro inesperado")
-            } 
+            }
         }
     }
 

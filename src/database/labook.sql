@@ -8,15 +8,10 @@ CREATE TABLE users(
     created_at TEXT DEFAULT (DATETIME()) NOT NULL
 );
 
-DROP TABLE users;
-
 INSERT INTO users(id, name, email, password, role)
     VALUES("u003", "Beltrano", "beltrano@email.com", "beltrano@34L", "usuário");
 
 SELECT * FROM users;
-
-DELETE FROM users
-WHERE id = "381d1175-1fcb-4734-818a-677b1c1a6cec";
 
 CREATE TABLE posts(
     id TEXT PRIMARY KEY UNIQUE NOT NULL,
@@ -38,12 +33,7 @@ VALUES
     ("p003", "u002", "E aí galera?!"),
     ("p004", "u003", "Tô de boa");
 
-DROP TABLE posts;
-
 SELECT * FROM posts;
-
-DELETE FROM posts
-WHERE id = "p004";
 
 CREATE TABLE likes_dislikes(
     user_id TEXT NOT NULL,
@@ -56,6 +46,8 @@ CREATE TABLE likes_dislikes(
         ON DELETE CASCADE 
         ON UPDATE CASCADE
 );
+
+SELECT * FROM likes_dislikes;
 
 INSERT INTO likes_dislikes(user_id, post_id, like)
 VALUES

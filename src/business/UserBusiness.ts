@@ -1,5 +1,11 @@
 import { UserDatabase } from "../database/UserDatabase"
-import { LoginUserInputDTO, LoginUserOutputDTO, SignupUsersInputDTO, SignupUsersOutputDTO, UserDTO } from "../dtos/UserDTO"
+import { 
+    LoginUserInputDTO, 
+    LoginUserOutputDTO, 
+    SignupUsersInputDTO, 
+    SignupUsersOutputDTO, 
+    UserDTO } 
+from "../dtos/UserDTO"
 import { BadRequestError } from "../errors/BadRequestError"
 import { NotFoundError } from "../errors/NotFoundError"
 import { User } from "../models/User"
@@ -15,38 +21,23 @@ export class UserBusiness {
         private idGenerator: IdGenerator,
         private tokenManager: TokenManager,
         private hashManager: HashManager
-    ){}
+    ) { }
 
-    public getAllUsers = async()=>{
-        const usersDB = this.userDatabase.getAllUsers()
-
-        const users: User[] = (await usersDB).map((userDB)=> new User(
-            userDB.id,
-            userDB.name,
-            userDB.email,
-            userDB.password,
-            userDB.role,
-            userDB.created_at
-        ))
-
-        return({users})
-    }
-
-    public signupUsers = async (input: SignupUsersInputDTO): Promise<SignupUsersOutputDTO> =>{
-        const {name, email, password} = input
+    public signupUsers = async (input: SignupUsersInputDTO): Promise<SignupUsersOutputDTO> => {
+        const { name, email, password } = input
 
         if (!email.match(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/)) {
             throw new BadRequestError("O email deve ter o formato 'exemplo@exemplo.com'.")
         }
 
         if (!password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{8,12}$/g)) {
-			throw new BadRequestError("'password' deve possuir entre 8 e 12 caracteres, com letras maiúsculas e minúsculas e no mínimo um número e um caractere especial")
-		}
+            throw new BadRequestError("'password' deve possuir entre 8 e 12 caracteres, com letras maiúsculas e minúsculas e no mínimo um número e um caractere especial")
+        }
 
         const userDBExists = await this.userDatabase.findUser(email)
 
-        if(userDBExists) {
-            throw new BadRequestError("'email' já cadastrado")            
+        if (userDBExists) {
+            throw new BadRequestError("'email' já cadastrado")
         }
 
         const id = this.idGenerator.generate()
@@ -86,21 +77,21 @@ export class UserBusiness {
         return output
     }
 
-    public loginUser = async (input: LoginUserInputDTO): Promise<LoginUserOutputDTO> =>{
-        const {email, password} = input
+    public loginUser = async (input: LoginUserInputDTO): Promise<LoginUserOutputDTO> => {
+        const { email, password } = input
 
         if (!email.match(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/)) {
             throw new BadRequestError("O email deve ter o formato 'exemplo@exemplo.com'.")
         }
 
         if (!password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{8,12}$/g)) {
-			throw new BadRequestError("'password' deve possuir entre 8 e 12 caracteres, com letras maiúsculas e minúsculas e no mínimo um número e um caractere especial")
-		}
+            throw new BadRequestError("'password' deve possuir entre 8 e 12 caracteres, com letras maiúsculas e minúsculas e no mínimo um número e um caractere especial")
+        }
 
         const userDBExists = await this.userDatabase.findUser(email)
 
-        if(!userDBExists) {
-            throw new NotFoundError("'email' incorreto ou não cadastrado")            
+        if (!userDBExists) {
+            throw new NotFoundError("'email' incorreto ou não cadastrado")
         }
 
         const user = new User(
@@ -116,7 +107,7 @@ export class UserBusiness {
 
         const isPasswordCorrect = await this.hashManager.compare(password, hashedPassword)
 
-        if(!isPasswordCorrect){
+        if (!isPasswordCorrect) {
             throw new BadRequestError("'Senha' incorreta")
         }
 

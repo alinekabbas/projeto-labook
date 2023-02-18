@@ -44,6 +44,12 @@ export interface LikeDislikePostInputDTO {
     like: boolean
 }
 
+export interface LikeDislikePostOutputDTO {
+    content: string,
+    like: number,
+    dislike: number
+}
+
 export class PostDTO {
     public getPostInput(
         token: unknown
@@ -169,4 +175,15 @@ export class PostDTO {
         }
         return dto
     }
+
+    public likeDislikePostOutput(post: Post): LikeDislikePostOutputDTO {
+        const dto: LikeDislikePostOutputDTO = {
+            content: post.getContent(),
+            like: post.getLikes(),
+            dislike: post.getDislikes()
+        }
+        return dto 
+    }
+
+    
 }
