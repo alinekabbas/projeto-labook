@@ -20,6 +20,5 @@ const userController = new UserController(
     )
 )
 
-userRouter.get("/", userController.getAllUsers)
 userRouter.post("/signup", userController.signupUsers)
 userRouter.post("/login", userController.loginUser)
